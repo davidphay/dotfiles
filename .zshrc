@@ -66,6 +66,8 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias d='docker'
+
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -108,7 +110,16 @@ zinit light romkatv/powerlevel10k
 
 if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 
-  zinit ice lucid wait'1' id-as'kubectl'
+  zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
+  zinit load mikefarah/yq
+
+  #zinit ice wait"2" lucid from"gh-r" as"program" mv"exa* -> exa"
+  #zinit light ogham/exa
+
+  #zinit ice from"gh-r" as"program"
+  #zinit load andreazorzetto/yh
+
+  zinit ice lucid wait'1' as"program" id-as"auto"
   zinit snippet https://dl.k8s.io/release/v1.24.0/bin/darwin/arm64/kubectl
 
   zinit ice from"gh-r" as"program" mv"helmfile* -> helmfile" bpick"*darwin_arm64*"
@@ -116,15 +127,6 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose" bpick"*darwin-aarch64*"
   zinit load docker/compose
-
-#zinit ice wait"2" lucid from"gh-r" as"program" mv"exa* -> exa"
-#zinit light ogham/exa
-
-  zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
-  zinit load mikefarah/yq
-
-#zinit ice from"gh-r" as"program" 
-#zinit load andreazorzetto/yh
 
   zinit ice from"gh-r" as"program" pick"usr/local/bin/helm-docs"
   zinit load norwoodj/helm-docs
@@ -135,6 +137,10 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program"
   zinit load andreazorzetto/yh
+
+  zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
+  zinit light sharkdp/bat
+
 
   zinit ice lucid wait'1' id-as'kubectl' as"null" sbin"kubectl"
   zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
