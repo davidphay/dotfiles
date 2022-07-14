@@ -124,6 +124,9 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
   zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
   zinit load mikefarah/yq
 
+  #zinit ice as"program" cp"httpstat.sh -> httpstat" pick"httpstat"
+  #zinit light b4b4r07/httpstat
+
   #zinit ice wait"2" lucid from"gh-r" as"program" mv"exa* -> exa"
   #zinit light ogham/exa
 
@@ -132,6 +135,9 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 
   zinit ice lucid wait'1' as"program" id-as"auto"
   zinit snippet https://dl.k8s.io/release/v1.24.0/bin/darwin/arm64/kubectl
+
+  zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
+  zinit snippet https://get.helm.sh/helm-v3.9.0-darwin-arm64.tar.gz
 
   zinit ice from"gh-r" as"program" mv"helmfile* -> helmfile" bpick"*darwin_arm64*"
   zinit load helmfile/helmfile
