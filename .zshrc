@@ -6,6 +6,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 export MACHINE_ARCH=$(uname -m)
+export MACHINE_NAME=$(hostname)
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -66,8 +67,18 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias d='docker'
+alias l='lsd'
+alias la='lsd -a'
+alias ll='lsd -lah'
+alias ls='lsd --color=auto'
 
+alias reload='source ~/.zshrc'
+alias ffs='sudo !!'
+alias myip='curl http://ipecho.net/plain; echo'
+
+alias d='docker'
+alias k="kubectl"
+alias t='terraform'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
