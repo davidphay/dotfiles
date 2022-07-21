@@ -1,3 +1,6 @@
 [user]
-	name = David Phayanouvong
-	email = david.phayanouvong@gmail.com
+  name = David Phayanouvong
+  email = david.phayanouvong@gmail.com
+
+[includeIf "gitdir:~/work/"]
+  path = ~/.gitconfig_work
