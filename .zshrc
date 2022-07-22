@@ -158,13 +158,23 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
   zinit light sharkdp/bat
 
+  zinit ice lucid wait'1' as"program" id-as"go" extract"!"
+  zinit snippet https://go.dev/dl/go1.18.4.linux-amd64.tar.gz
 
   zinit ice lucid wait'1' id-as'kubectl' as"null" sbin"kubectl"
   zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
 
+  zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
+  zinit snippet https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz
+
   zinit ice from"gh-r" as"program" mv"helmfile_linux_amd64 -> helmfile"
   zinit load helmfile/helmfile
 
+  zinit ice from"gh-r" as"program" bpick"krew-linux_amd64.tar.gz" mv"krew-linux_amd64 -> krew" pick"krew"
+  zinit load kubernetes-sigs/krew
+
+  zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
+  zinit load docker/compose
 fi
 
 # Two regular plugins loaded without investigating.
