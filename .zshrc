@@ -185,4 +185,4 @@ zinit ice atinit'zicompinit'
 zinit light zdharma-continuum/fast-syntax-highlighting
 
 
-[[ ! -f ~/.zsh.work ]] || source ~/.zsh.work
+[[ ! -f ~/work/.zshrc.work ]] || source ~/work/.zshrc.work
