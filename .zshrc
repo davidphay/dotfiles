@@ -10,6 +10,8 @@ export MACHINE_NAME=$(hostname)
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+# Add go in PATH
+export PATH=$PATH:~/.local/share/zinit/snippets/go/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
