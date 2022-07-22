@@ -4,3 +4,23 @@
 
 [includeIf "gitdir:~/work/"]
   path = ~/work/.gitconfig_work
+
+[alias]
+  co = checkout
+  st = status -sb
+  cm = commit -m
+  rv = remote -v
+  ll = log --oneline
+  del = branch -D
+  last = log -1 HEAD --stat
+  undo = reset HEAD~
+  list-branch = ! git for-each-ref --format=' %(authorname) %09 %(refname)' --sort=authorname
+  todo = ! git grep --extended-regexp -I --line-number --break --heading --color=auto 'TODO|FIXME'
+  se = !git rev-list --all | xargs git grep -F
+  lg = !git log --pretty=format:\"%C(magenta)%h%Creset -%C(red)%d%Creset %s %C(dim green)(%cr) [%an]\" --abbrev-commit -30
+
+[color]
+  ui = auto
+
+[credential]
+  helper = store
