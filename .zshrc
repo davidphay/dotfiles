@@ -8,6 +8,7 @@ fi
 export MACHINE_ARCH=$(uname -m)
 export MACHINE_NAME=$(hostname)
 
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Add go in PATH
