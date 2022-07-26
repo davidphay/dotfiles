@@ -23,4 +23,4 @@
   ui = auto
 
 [credential]
-  helper = store
+	helper = cache --timeout=31556952
