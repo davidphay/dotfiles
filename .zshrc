@@ -12,6 +12,8 @@ export MACHINE_NAME=$(hostname)
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Add go in PATH
 export PATH=$PATH:~/.local/share/zinit/snippets/go/bin
+# Add Krew
+export PATH=$PATH:~/.krew/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -114,6 +116,7 @@ zinit snippet OMZ::lib/history.zsh
 zinit snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
 zinit snippet OMZ::plugins/git/git.plugin.zsh
 zinit snippet OMZ::plugins/kubectl/kubectl.plugin.zsh
+zinit snippet OMZ::plugins/terraform/terraform.plugin.zsh
 
 zinit ice blockf
 zinit light zsh-users/zsh-completions
@@ -151,8 +154,10 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
   zinit load norwoodj/helm-docs
 
   zinit ice from"gh-r" as"program" bpick"krew-darwin_arm64.tar.gz" mv"krew-darwin_arm64 -> krew" pick"krew"
-  zinit load kubernetes-sigs/krew 
-
+  zinit load kubernetes-sigs/krew
+  
+  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
+  zinit snippet https://releases.hashicorp.com/terraform/1.3.2/terraform_1.3.2_darwin_arm64.zip
 elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program"
   zinit load andreazorzetto/yh
@@ -177,6 +182,9 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
 
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
   zinit load docker/compose
+  
+  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
+  zinit snippet https://releases.hashicorp.com/terraform/1.3.2/terraform_1.3.2_linux_amd64.zip
 fi
 
 # Two regular plugins loaded without investigating.
