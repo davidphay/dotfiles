@@ -8,13 +8,10 @@ fi
 export MACHINE_ARCH=$(uname -m)
 export MACHINE_NAME=$(hostname)
 
-
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
-# Add go in PATH
-export PATH=$PATH:~/.local/share/zinit/snippets/go/bin
-# Add Krew
-export PATH=$PATH:~/.krew/bin
+# update PATH
+export PATH=$PATH:~/.local/share/zinit/snippets/go/bin:/home/dpg/go/bin/:~/.krew/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -143,7 +140,7 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
   zinit snippet https://dl.k8s.io/release/v1.24.0/bin/darwin/arm64/kubectl
 
   zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
-  zinit snippet https://get.helm.sh/helm-v3.9.0-darwin-arm64.tar.gz
+  zinit snippet https://get.helm.sh/helm-v3.11.0-darwin-arm64.tar.gz
 
   zinit ice from"gh-r" as"program" mv"helmfile* -> helmfile" bpick"*darwin_arm64*"
   zinit load helmfile/helmfile
@@ -156,9 +153,13 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 
   zinit ice from"gh-r" as"program" bpick"krew-darwin_arm64.tar.gz" mv"krew-darwin_arm64 -> krew" pick"krew"
   zinit load kubernetes-sigs/krew
-  
+
   zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
-  zinit snippet https://releases.hashicorp.com/terraform/1.3.2/terraform_1.3.2_darwin_arm64.zip
+  zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_darwin_arm64.zip
+
+  zinit ice from"gh-r" as"program"
+  zinit load derailed/k9s
+
 elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program"
   zinit load andreazorzetto/yh
@@ -173,7 +174,7 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
 
   zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
-  zinit snippet https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz
+  zinit snippet https://get.helm.sh/helm-v3.12.1-linux-amd64.tar.gz
 
   zinit ice from"gh-r" as"program" mv"helmfile_linux_amd64 -> helmfile"
   zinit load helmfile/helmfile
@@ -181,11 +182,14 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program" bpick"krew-linux_amd64.tar.gz" mv"krew-linux_amd64 -> krew" pick"krew"
   zinit load kubernetes-sigs/krew
 
+  zinit ice from"gh-r" as"program"
+  zinit load derailed/k9s
+
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
   zinit load docker/compose
-  
+
   zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
-  zinit snippet https://releases.hashicorp.com/terraform/1.3.2/terraform_1.3.2_linux_amd64.zip
+  zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_linux_amd64.zip
 fi
 
 # Two regular plugins loaded without investigating.
@@ -194,4 +198,4 @@ zinit ice atinit'zicompinit'
 zinit light zdharma-continuum/fast-syntax-highlighting
 
 
-[[ ! -f ~/work/.zshrc.work ]] || source ~/work/.zshrc.work
+[[ ! -f /work/.zshrc.work ]] || source /work/.zshrc.work

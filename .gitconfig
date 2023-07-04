@@ -1,9 +1,9 @@
 [user]
   name = David Phayanouvong
-  email = david.phayanouvong@gmail.com
+  email = david.phayanouvong@systemit.fr
 
-[includeIf "gitdir:~/work/"]
-  path = ~/work/.gitconfig_work
+[includeIf "gitdir:/work/"]
+  path = /work/.gitconfig_work
 
 [alias]
   co = checkout
@@ -24,6 +24,8 @@
 
 [credential]
 	helper = cache --timeout=31556952
+[core]
+	editor = vim
 [http]
 	proxy = http://aproxy.corproot.net:8080
 [https]
