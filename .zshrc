@@ -176,14 +176,11 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice lucid wait'1' as"program" id-as"go" extract"!"
   zinit snippet https://go.dev/dl/go1.23.0.linux-amd64.tar.gz
 
-  zinit ice lucid wait'1' id-as'kubectl' as"null" sbin"kubectl"
-  zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
+  zinit ice as"program" id-as"auto"
+  zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.25.1/bin/linux/amd64/kubectl
 
-  zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
+  zinit ice lucid wait'1' as"program" extract"!" mv "linux-amd64 -> helm"
   zinit snippet https://get.helm.sh/helm-v3.12.1-linux-amd64.tar.gz
-
-  zinit ice from"gh-r" as"program" mv"helmfile_linux_amd64 -> helmfile"
-  zinit load helmfile/helmfile
 
   zinit ice from"gh-r" as"program" mv"helmfile_linux_amd64 -> helmfile"
   zinit load helmfile/helmfile
@@ -197,7 +194,7 @@ elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
   zinit load docker/compose
 
-  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
+  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!" pick "terraform"
   zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_linux_amd64.zip
 fi
 
