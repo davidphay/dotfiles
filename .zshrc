@@ -5,16 +5,18 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-export MACHINE_ARCH=$(uname -m)
 export MACHINE_NAME=$(hostname)
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 # update PATH
-export PATH=$PATH:~/.local/share/zinit/snippets/go/bin:/home/dpg/go/bin/:~/.krew/bin
+export PATH=$PATH:~/.local/share/zinit/snippets/go/bin:~/.krew/bin:~/.local/bin
+export GOPATH=$HOME
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # stamp shown in the history command output.
 # You can set one of the optional three formats:
@@ -39,8 +41,10 @@ plugins=(
   docker docker-compose
   kubectl helm
   brew
+  terraform
 )
-
+autoload -U compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
 
 source $ZSH/oh-my-zsh.sh
 
@@ -57,6 +61,7 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='mvim'
 # fi
+export EDITOR='vim'
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -81,6 +86,19 @@ alias myip='curl http://ipecho.net/plain; echo'
 alias d='docker'
 alias k="kubectl"
 alias t='terraform'
+
+## Useful variables for installs
+platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+architecture="$(uname -m)"
+case $architecture in
+  x86_64)
+    arch="amd64"
+    ;;
+  arm64)
+    architecture="aarch64"
+    arch="arm64"
+    ;;
+esac
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -108,13 +126,12 @@ zinit light-mode for \
 
 
 ### End of Zinit's installer chunk
-
-zinit snippet OMZ::lib/completion.zsh
-zinit snippet OMZ::lib/history.zsh
-zinit snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
-zinit snippet OMZ::plugins/git/git.plugin.zsh
-zinit snippet OMZ::plugins/kubectl/kubectl.plugin.zsh
-zinit snippet OMZ::plugins/terraform/terraform.plugin.zsh
+zinit snippet OMZL::completion.zsh
+zinit snippet OMZL::history.zsh
+zinit snippet OMZP::colored-man-pages/colored-man-pages.plugin.zsh
+zinit snippet OMZP::git/git.plugin.zsh
+zinit snippet OMZP::kubectl/kubectl.plugin.zsh
+zinit snippet OMZP::terraform/terraform.plugin.zsh
 
 zinit ice blockf
 zinit light zsh-users/zsh-completions
@@ -122,10 +139,49 @@ zinit light zsh-users/zsh-completions
 zinit ice depth=1
 zinit light romkatv/powerlevel10k
 
-if [[ "${MACHINE_ARCH}" == "arm64" ]];then
 
-  zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
-  zinit load mikefarah/yq
+zinit ice from"gh-r" as"program" # zinit ice from"gh-r" as"program" bpick"yq_${platform}_${arch}.tar.gz" mv"yq_${platform}_${arch} -> yq"
+zinit load mikefarah/yq
+
+zinit ice from"gh-r" as"program"
+zinit load andreazorzetto/yh
+
+zinit ice as"program" id-as"auto"
+zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.25.16/bin/${platform}/${arch}/kubectl
+
+zinit ice from"gh-r" as"program"
+zinit load derailed/k9s
+
+zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
+zinit light sharkdp/bat
+
+zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
+  mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
+zinit load lsd-rs/lsd
+
+zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
+  mv"krew-${platform}_${arch} -> krew" pick"krew"
+zinit load kubernetes-sigs/krew 
+
+zinit ice from"gh-r" as"program" mv"helmfile_${platform}_${arch} -> helmfile"
+zinit load helmfile/helmfile
+
+zinit id-as"helm" as="readurl|command" extract \
+  pick"${platform}-${arch}/helm" \
+  dlink"https://get.helm.sh/helm-v%VERSION%-${platform}-${arch}.tar.gz" \
+  for https://github.com/helm/helm/releases/
+  #atload"helm plugin install https://github.com/databus23/helm-diff" \
+
+zinit ice as"program" id-as"terraform" extract
+zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_${platform}_${arch}.zip
+
+zinit ice lucid wait'1' as"program" id-as"go" extract"!" 
+zinit snippet https://go.dev/dl/go1.23.0.${platform}-${arch}.tar.gz
+
+if [[ "${architecture}" == "arm64" ]];then
+
+  # zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
+  # zinit load mikefarah/yq
 
   #zinit ice as"program" cp"httpstat.sh -> httpstat" pick"httpstat"
   #zinit light b4b4r07/httpstat
@@ -136,17 +192,14 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
   #zinit ice from"gh-r" as"program"
   #zinit load andreazorzetto/yh
 
-  zinit ice as"command" from"gh-r" mv"lsd* -> lsd" pick"lsd/lsd"
-  zinit light lsd-rs/lsd
+  # zinit ice lucid wait'1' as"program" id-as"auto"
+  # zinit snippet https://dl.k8s.io/release/v1.24.0/bin/darwin/arm64/kubectl
 
-  zinit ice lucid wait'1' as"program" id-as"auto"
-  zinit snippet https://dl.k8s.io/release/v1.24.0/bin/darwin/arm64/kubectl
+  # zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
+  # zinit snippet https://get.helm.sh/helm-v3.11.0-darwin-arm64.tar.gz
 
-  zinit ice lucid wait'1' as"program" id-as"helm" extract"!"
-  zinit snippet https://get.helm.sh/helm-v3.11.0-darwin-arm64.tar.gz
-
-  zinit ice from"gh-r" as"program" mv"helmfile* -> helmfile" bpick"*darwin_arm64*"
-  zinit load helmfile/helmfile
+  # zinit ice from"gh-r" as"program" mv"helmfile* -> helmfile" bpick"*darwin_arm64*"
+  # zinit load helmfile/helmfile
 
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose" bpick"*darwin-aarch64*"
   zinit load docker/compose
@@ -154,48 +207,18 @@ if [[ "${MACHINE_ARCH}" == "arm64" ]];then
   zinit ice from"gh-r" as"program" pick"usr/local/bin/helm-docs"
   zinit load norwoodj/helm-docs
 
-  zinit ice from"gh-r" as"program" bpick"krew-darwin_arm64.tar.gz" mv"krew-darwin_arm64 -> krew" pick"krew"
-  zinit load kubernetes-sigs/krew
+  # zinit ice from"gh-r" as"program" bpick"krew-darwin_arm64.tar.gz" mv"krew-darwin_arm64 -> krew" pick"krew"
+  # zinit load kubernetes-sigs/krew
 
-  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
-  zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_darwin_arm64.zip
+  # zinit ice lucid wait'1' as"program" id-as"terraform" extract"!"
+  # zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_darwin_arm64.zip
 
-  zinit ice from"gh-r" as"program"
-  zinit load derailed/k9s
+  # zinit ice from"gh-r" as"program"
+  # zinit load derailed/k9s
 
-elif [[ "${MACHINE_ARCH}" == "x86_64" ]];then
-  zinit ice from"gh-r" as"program"
-  zinit load andreazorzetto/yh
-
-  zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
-  zinit light sharkdp/bat
-
-  zinit ice as"command" from"gh-r" mv"lsd* -> lsd" pick"lsd/lsd"
-  zinit light lsd-rs/lsd
-
-  zinit ice lucid wait'1' as"program" id-as"go" extract"!"
-  zinit snippet https://go.dev/dl/go1.23.0.linux-amd64.tar.gz
-
-  zinit ice as"program" id-as"auto"
-  zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.25.1/bin/linux/amd64/kubectl
-
-  zinit ice lucid wait'1' as"program" extract"!" mv "linux-amd64 -> helm"
-  zinit snippet https://get.helm.sh/helm-v3.12.1-linux-amd64.tar.gz
-
-  zinit ice from"gh-r" as"program" mv"helmfile_linux_amd64 -> helmfile"
-  zinit load helmfile/helmfile
-
-  zinit ice from"gh-r" as"program" bpick"krew-linux_amd64.tar.gz" mv"krew-linux_amd64 -> krew" pick"krew"
-  zinit load kubernetes-sigs/krew
-
-  zinit ice from"gh-r" as"program"
-  zinit load derailed/k9s
-
+elif [[ "${architecture}" == "x86_64" ]];then
   zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
   zinit load docker/compose
-
-  zinit ice lucid wait'1' as"program" id-as"terraform" extract"!" pick "terraform"
-  zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_linux_amd64.zip
 fi
 
 # Two regular plugins loaded without investigating.
