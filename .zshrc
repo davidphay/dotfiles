@@ -72,8 +72,6 @@ export EDITOR='vim'
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
 alias l='lsd'
 alias la='lsd -a'
 alias ll='lsd -lah'
@@ -100,9 +98,6 @@ case $architecture in
     ;;
 esac
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
     print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
@@ -119,10 +114,10 @@ autoload -Uz _zinit
 # Load a few important annexes, without Turbo
 # (this is currently required for annexes)
 zinit light-mode for \
-    zdharma-continuum/zinit-annex-as-monitor \
-    zdharma-continuum/zinit-annex-bin-gem-node \
-    zdharma-continuum/zinit-annex-patch-dl \
-    zdharma-continuum/zinit-annex-rust
+    zdharma-continuum/z-a-rust \
+    zdharma-continuum/z-a-as-monitor \
+    zdharma-continuum/z-a-patch-dl \
+    zdharma-continuum/z-a-bin-gem-node
 
 
 ### End of Zinit's installer chunk
@@ -147,7 +142,7 @@ zinit ice from"gh-r" as"program"
 zinit load andreazorzetto/yh
 
 zinit ice as"program" id-as"auto"
-zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.25.16/bin/${platform}/${arch}/kubectl
+zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.30.5/bin/${platform}/${arch}/kubectl
 
 zinit ice from"gh-r" as"program"
 zinit load derailed/k9s
@@ -173,10 +168,19 @@ zinit id-as"helm" as="readurl|command" extract \
   #atload"helm plugin install https://github.com/databus23/helm-diff" \
 
 zinit ice as"program" id-as"terraform" extract
-zinit snippet https://releases.hashicorp.com/terraform/1.3.5/terraform_1.3.5_${platform}_${arch}.zip
+zinit snippet https://releases.hashicorp.com/terraform/1.10.4/terraform_1.10.4_${platform}_${arch}.zip
 
 zinit ice lucid wait'1' as"program" id-as"go" extract"!" 
-zinit snippet https://go.dev/dl/go1.23.0.${platform}-${arch}.tar.gz
+zinit snippet https://go.dev/dl/go1.23.5.${platform}-${arch}.tar.gz
+
+zinit ice from"gh-r" ver"v2.13.3" as"program" mv"argocd-${platform}-${arch} -> argocd"
+zinit load argoproj/argo-cd
+
+zinit ice from"gh-r" ver"v0.16.23" as"program"
+zinit load cilium/cilium-cli
+
+zinit ice from"gh-r" as"program"
+zinit load cilium/hubble
 
 if [[ "${architecture}" == "arm64" ]];then
 
@@ -226,5 +230,10 @@ zinit light zsh-users/zsh-autosuggestions
 zinit ice atinit'zicompinit'
 zinit light zdharma-continuum/fast-syntax-highlighting
 
+# Kubecolor
+alias kubectl=kubecolor
+compdef kubecolor=kubectl
 
-[[ ! -f /work/.zshrc.work ]] || source /work/.zshrc.work
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
