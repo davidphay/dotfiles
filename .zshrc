@@ -142,7 +142,7 @@ zinit ice from"gh-r" as"program"
 zinit load andreazorzetto/yh
 
 zinit ice as"program" id-as"auto"
-zinit snippet https://storage.googleapis.com/kubernetes-release/release/v1.30.5/bin/${platform}/${arch}/kubectl
+zinit snippet https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl
 
 zinit ice from"gh-r" as"program"
 zinit load derailed/k9s
