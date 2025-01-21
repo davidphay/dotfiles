@@ -145,6 +145,9 @@ zinit ice as"program" id-as"auto"
 zinit snippet https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl
 
 zinit ice from"gh-r" as"program"
+zinit load kubecolor/kubecolor
+
+zinit ice from"gh-r" as"program"
 zinit load derailed/k9s
 
 zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
