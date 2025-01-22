@@ -153,7 +153,7 @@ zinit id-as"helm" as="readurl|command" extract \
   for https://github.com/helm/helm/releases/
   #atload"helm plugin install https://github.com/databus23/helm-diff" \
 
-zinit ice from"gh-r" as"program" pick"sops-* -> sops"
+zinit ice from"gh-r" as"program" mv"sops-* -> sops"
 zinit load getsops/sops
  
 # Install package based on distro
