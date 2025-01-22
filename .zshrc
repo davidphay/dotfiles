@@ -214,7 +214,7 @@ else
     mv"krew-${platform}_${arch} -> krew" pick"krew"
   zinit load kubernetes-sigs/krew
  
-  zinit ice from"gh-r" as"program" mv"helmfile_${platform}_${arch} -> helmfile"
+  zinit ice from"gh-r" as"program"
   zinit load helmfile/helmfile
  
   zinit ice from"gh-r" as"program"
