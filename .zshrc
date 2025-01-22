@@ -185,6 +185,9 @@ zinit load cilium/cilium-cli
 zinit ice from"gh-r" as"program"
 zinit load cilium/hubble
 
+zinit ice from"gh-r" as"program"
+zinit load bitnami-labs/sealed-secrets
+
 if [[ "${architecture}" == "arm64" ]];then
 
   # zinit ice from"gh-r" as"program" mv"yq* -> yq" bpick"*darwin_arm64*"
