@@ -78,7 +78,7 @@ alias ll='lsd -lah'
 alias ls='lsd --color=auto'
  
 alias reload='source ~/.zshrc'
-alias ffs='sudo !!'
+alias ffs='sudo $(history \!\!)'
 alias myip='curl http://ipecho.net/plain; echo'
  
 alias d='docker'
