@@ -197,7 +197,7 @@ else
   zinit ice from"gh-r" as"program"
   zinit load derailed/k9s
  
-  zinit ice from"gh-r" as"program"
+  zinit ice from"gh-r" as"program" mv"yq_*-> yq"
   zinit load mikefarah/yq
  
   zinit ice from"gh-r" as"program"
