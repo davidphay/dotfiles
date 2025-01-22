@@ -152,6 +152,9 @@ zinit id-as"helm" as="readurl|command" extract \
   dlink"https://get.helm.sh/helm-v%VERSION%-${platform}-${arch}.tar.gz" \
   for https://github.com/helm/helm/releases/
   #atload"helm plugin install https://github.com/databus23/helm-diff" \
+
+zinit ice from"gh-r" as"program" pick"sops-* -> sops"
+zinit load getsops/sops
  
 # Install package based on distro
 if [[ "${kernel}" == *"-WSL2" ]];then
