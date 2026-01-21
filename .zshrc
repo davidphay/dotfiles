@@ -1,3 +1,8 @@
+# Skip the not really helping Debian global compinit
+skip_global_compinit=1
+
+[[ ! -f ~/.zshrc_sensitive ]] || source ~/.zshrc_sensitive
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -5,7 +10,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
  
-export MACHINE_NAME=$(hostname)
+# export MACHINE_NAME=$(hostname) # TODO: Not needed anymore ?
  
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -62,6 +67,9 @@ source $ZSH/oh-my-zsh.sh
 #   export EDITOR='mvim'
 # fi
 export EDITOR='vim'
+
+# Force emacs mode for shell navigation (even with vim as editor)
+bindkey -e
  
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -128,7 +136,7 @@ zinit snippet OMZP::git/git.plugin.zsh
 zinit snippet OMZP::kubectl/kubectl.plugin.zsh
 zinit snippet OMZP::terraform/terraform.plugin.zsh
 
-
+zstyle ':completion' menu select
 
 # Package could be install cross plateform without issue
 zinit ice depth=1
@@ -139,7 +147,7 @@ zinit ice blockf
 zinit light zsh-users/zsh-completions
  
 zinit ice as"program" id-as"terraform" extract
-zinit snippet https://releases.hashicorp.com/terraform/1.10.4/terraform_1.10.4_${platform}_${arch}.zip
+zinit snippet https://releases.hashicorp.com/terraform/1.14.2/terraform_1.14.2_${platform}_${arch}.zip
  
 zinit ice lucid wait'1' as"program" id-as"go" extract"!"
 zinit snippet https://go.dev/dl/go1.23.5.${platform}-${arch}.tar.gz
@@ -155,82 +163,124 @@ zinit id-as"helm" as="readurl|command" extract \
 
 zinit ice from"gh-r" as"program" mv"sops-* -> sops"
 zinit load getsops/sops
+
+zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
+zinit load sharkdp/bat
+
+zinit ice from"gh-r" as"program"
+zinit load derailed/k9s
+
+zinit ice from"gh-r" as"program" mv"yq_*-> yq"
+zinit load mikefarah/yq
+
+zinit ice from"gh-r" as"program"
+zinit load andreazorzetto/yh
+
+zinit ice from"gh-r" as"program"
+zinit load kubecolor/kubecolor
+
+zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
+  mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
+zinit load lsd-rs/lsd
+
+zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
+  mv"krew-${platform}_${arch} -> krew" pick"krew"
+zinit load kubernetes-sigs/krew
+
+zinit ice from"gh-r" as"program"
+zinit load helmfile/helmfile
+
+zinit ice from"gh-r" as"program"
+zinit load cilium/hubble
+
+zinit ice from"gh-r" as"program"
+zinit load bitnami-labs/sealed-secrets
+
+zinit ice from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
+zinit load argoproj/argo-cd
+
+zinit ice from"gh-r" as"program"
+zinit load cilium/cilium-cli
+
+zinit ice from"gh-r" as"program" pick"uv-*/uv" sbin"uv-*/uvx"
+zinit load astral-sh/uv
+
  
 # Install package based on distro
 if [[ "${kernel}" == *"-WSL2" ]];then
   # Install package for WSL only
-  zinit ice from"gh-r" ver"v1.1.5" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
-    mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
-  zinit load lsd-rs/lsd
+  # zinit ice from"gh-r" ver"v1.1.5" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
+  #   mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
+  # zinit load lsd-rs/lsd
  
-  zinit ice from"gh-r" ver"v0.4.4" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
-    mv"krew-${platform}_${arch} -> krew" pick"krew"
-  zinit load kubernetes-sigs/krew
+  # zinit ice from"gh-r" ver"v0.4.4" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
+  #   mv"krew-${platform}_${arch} -> krew" pick"krew"
+  # zinit load kubernetes-sigs/krew
  
-  zinit ice from"gh-r" ver"v0.170.0" as"program"
-  zinit load helmfile/helmfile
+  # zinit ice from"gh-r" ver"v0.170.0" as"program"
+  # zinit load helmfile/helmfile
  
-  zinit ice from"gh-r" ver"v1.16.5" as"program"
-  zinit load cilium/hubble
+  # zinit ice from"gh-r" ver"v1.16.5" as"program"
+  # zinit load cilium/hubble
  
-  zinit ice from"gh-r" ver"v0.28.0" as"program"
-  zinit load bitnami-labs/sealed-secrets
+  # zinit ice from"gh-r" ver"v0.28.0" as"program"
+  # zinit load bitnami-labs/sealed-secrets
  
-  zinit ice as"command" from"gh-r" ver"v0.25.0" mv"bat* -> bat" pick"bat/bat"
-  zinit load sharkdp/bat
+  # zinit ice as"command" from"gh-r" ver"v0.25.0" mv"bat* -> bat" pick"bat/bat"
+  # zinit load sharkdp/bat
  
-  zinit ice from"gh-r" ver"v0.5.0" as"program"
-  zinit load kubecolor/kubecolor
+  # zinit ice from"gh-r" ver"v0.5.0" as"program"
+  # zinit load kubecolor/kubecolor
  
-  zinit ice from"gh-r" ver"v4.45.1" as"program" mv"yq_*-> yq"
-  zinit load mikefarah/yq
+  # zinit ice from"gh-r" ver"v4.45.1" as"program" mv"yq_*-> yq"
+  # zinit load mikefarah/yq
  
-  zinit ice from"gh-r" ver"v0.32.7" as"program"
-  zinit load derailed/k9s
+  # zinit ice from"gh-r" ver"v0.32.7" as"program"
+  # zinit load derailed/k9s
  
-  zinit ice from"gh-r" ver"v2.13.3" as"program" mv"argocd-${platform}-${arch} -> argocd"
-  zinit load argoproj/argo-cd
+  # zinit ice from"gh-r" ver"v2.13.3" as"program" mv"argocd-${platform}-${arch} -> argocd"
+  # zinit load argoproj/argo-cd
  
-  zinit ice from"gh-r" ver"v0.16.23" as"program"
-  zinit load cilium/cilium-cli
+  # zinit ice from"gh-r" ver"v0.16.23" as"program"
+  # zinit load cilium/cilium-cli
 else
-  zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
-  zinit load sharkdp/bat
+  # zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
+  # zinit load sharkdp/bat
  
-  zinit ice from"gh-r" as"program"
-  zinit load derailed/k9s
+  # zinit ice from"gh-r" as"program"
+  # zinit load derailed/k9s
  
-  zinit ice from"gh-r" as"program" mv"yq_*-> yq"
-  zinit load mikefarah/yq
+  # zinit ice from"gh-r" as"program" mv"yq_*-> yq"
+  # zinit load mikefarah/yq
  
-  zinit ice from"gh-r" as"program"
-  zinit load andreazorzetto/yh
+  # zinit ice from"gh-r" as"program"
+  # zinit load andreazorzetto/yh
  
-  zinit ice from"gh-r" as"program"
-  zinit load kubecolor/kubecolor
+  # zinit ice from"gh-r" as"program"
+  # zinit load kubecolor/kubecolor
  
-  zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
-    mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
-  zinit load lsd-rs/lsd
+  # zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
+  #   mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
+  # zinit load lsd-rs/lsd
  
-  zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
-    mv"krew-${platform}_${arch} -> krew" pick"krew"
-  zinit load kubernetes-sigs/krew
+  # zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
+  #   mv"krew-${platform}_${arch} -> krew" pick"krew"
+  # zinit load kubernetes-sigs/krew
  
-  zinit ice from"gh-r" as"program"
-  zinit load helmfile/helmfile
+  # zinit ice from"gh-r" as"program"
+  # zinit load helmfile/helmfile
  
-  zinit ice from"gh-r" as"program"
-  zinit load cilium/hubble
+  # zinit ice from"gh-r" as"program"
+  # zinit load cilium/hubble
  
-  zinit ice from"gh-r" as"program"
-  zinit load bitnami-labs/sealed-secrets
+  # zinit ice from"gh-r" as"program"
+  # zinit load bitnami-labs/sealed-secrets
  
-  zinit ice from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
-  zinit load argoproj/argo-cd
+  # zinit ice from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
+  # zinit load argoproj/argo-cd
  
-  zinit ice from"gh-r" as"program"
-  zinit load cilium/cilium-cli
+  # zinit ice from"gh-r" as"program"
+  # zinit load cilium/cilium-cli
  
   if [[ "${architecture}" == "x86_64" ]];then
     zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
