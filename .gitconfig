@@ -1,9 +1,8 @@
 [user]
   name = David Phayanouvong
-  email = david.phayanouvong@systemit.fr
 
-[includeIf "gitdir:/work/"]
-  path = /work/.gitconfig_work
+[include]
+  path = ~/.gitconfig_current
 
 [alias]
   co = checkout
@@ -14,7 +13,7 @@
   del = branch -D
   last = log -1 HEAD --stat
   undo = reset HEAD~
-  list-branch = ! git for-each-ref --format=' %(authorname) %09 %(refname)' --sort=authorname
+  branches = ! git for-each-ref --format=' %(authorname) %09 %(refname)' --sort=authorname
   todo = ! git grep --extended-regexp -I --line-number --break --heading --color=auto 'TODO|FIXME'
   se = !git rev-list --all | xargs git grep -F
   lg = !git log --pretty=format:\"%C(magenta)%h%Creset -%C(red)%d%Creset %s %C(dim green)(%cr) [%an]\" --abbrev-commit -30
@@ -26,3 +25,25 @@
 	helper = store
 [core]
 	editor = vim
+
+[pull]
+	ff = only
+
+[diff]
+  compactionHeuristic = true
+	algorithm = histogram
+
+[push]
+	followTags = true
+	default = simple
+	autoSetupRemote = true
+
+[rebase]
+	autosquash = true
+
+[rerere]
+  enabled = true
+
+[help]
+	autoCorrect = 30
+
