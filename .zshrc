@@ -1,65 +1,22 @@
-# Skip the not really helping Debian global compinit
+# ------------------------------------------------------------------------------
+# Fast startup / global setup
+# ------------------------------------------------------------------------------
+
 skip_global_compinit=1
 
-[[ ! -f ~/.zshrc_sensitive ]] || source ~/.zshrc_sensitive
+[[ -f "$HOME/.zshenv-local" ]] && source "$HOME/.zshenv-local"
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
- 
-# export MACHINE_NAME=$(hostname) # TODO: Not needed anymore ?
- 
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
-# update PATH
-export PATH=$PATH:~/.local/share/zinit/snippets/go/bin:~/.krew/bin:~/.local/bin
-export GOPATH=$HOME
- 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
- 
-ZSH_THEME="powerlevel10k/powerlevel10k"
- 
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
- 
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
- 
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(
-  colorize
-  dirhistory
-  git git-auto-fetch
-  golang
-  docker docker-compose
-  kubectl helm
-  brew
-  terraform
-)
-autoload -U compinit && compinit
-autoload -U +X bashcompinit && bashcompinit
- 
-source $ZSH/oh-my-zsh.sh
- 
-# User configuration
- 
-# export MANPATH="/usr/local/man:$MANPATH"
- 
+
+# ------------------------------------------------------------------------------
+# Environment
+# ------------------------------------------------------------------------------
+
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
- 
+
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
@@ -67,245 +24,269 @@ source $ZSH/oh-my-zsh.sh
 #   export EDITOR='mvim'
 # fi
 export EDITOR='vim'
+export GOPATH="$HOME/go"
+
+# manage PATH with zsh's array syntax (instead of colon-separated string)
+typeset -U path PATH
+path+=(
+  "$HOME/.local/bin"
+  "$HOME/.krew/bin"
+  "$GOPATH/bin"
+)
+
+[[ -n "$GOROOT" ]] && path+=("$GOROOT/bin")
 
 # Force emacs mode for shell navigation (even with vim as editor)
 bindkey -e
- 
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
- 
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-alias l='lsd'
-alias la='lsd -a'
-alias ll='lsd -lah'
-alias ls='lsd --color=auto'
- 
-alias reload='source ~/.zshrc'
-alias ffs='sudo $(history -p \!\!)'
-alias myip='curl http://ipecho.net/plain; echo'
- 
-alias d='docker'
-alias k="kubectl"
-alias t='terraform'
- 
-## Useful variables for installs
-kernel="$(uname -r)"
-platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
-architecture="$(uname -m)"
-case $architecture in
-  x86_64)
+
+# ------------------------------------------------------------------------------
+# Platform detection
+# ------------------------------------------------------------------------------
+
+os="$(uname -s)"
+platform="$(printf '%s' "$os" | tr '[:upper:]' '[:lower:]')"
+machine="$(uname -m)"
+
+case "$os:$machine" in
+  Linux:x86_64)
     arch="amd64"
+    rust_target="x86_64-unknown-linux-gnu"
+    docker_compose_arch="x86_64"
     ;;
-  arm64)
-    architecture="aarch64"
+  Darwin:arm64)
     arch="arm64"
+    rust_target="aarch64-apple-darwin"
+    docker_compose_arch=""
+    ;;
+  *)
+    arch="$machine"
+    rust_target=""
+    docker_compose_arch=""
     ;;
 esac
- 
-### Added by Zinit's installer
-if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
-    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
-    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
-    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
-        print -P "%F{33} %F{34}Installation successful.%f%b" || \
-        print -P "%F{160} The clone has failed.%f%b"
+
+is_linux=false
+
+[[ "$os" == "Linux" ]] && is_linux=true
+
+# ------------------------------------------------------------------------------
+# Aliases
+# ------------------------------------------------------------------------------
+
+alias reload='source ~/.zshrc'
+alias ffs='sudo $(history -p \!\!)'
+alias myip='curl -fsSL https://ipecho.net/plain; echo'
+alias ep='print -l ${(s/:/)PATH}'
+
+alias d='docker'
+
+if (( $+commands[lsd] )); then
+  alias ls='lsd --color=auto'
+  alias l='lsd'
+  alias la='lsd -a'
+  alias ll='lsd -lah'
 fi
- 
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+
+# ------------------------------------------------------------------------------
+# Zinit bootstrap
+# ------------------------------------------------------------------------------
+
+ZINIT_BASE="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit"
+ZINIT_HOME="${ZINIT_BASE}/zinit.git"
+
+[ ! -d "$ZINIT_HOME" ] && mkdir -p "$(dirname "$ZINIT_HOME")"
+[ ! -d "$ZINIT_HOME/.git" ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+
+source "${ZINIT_HOME}/zinit.zsh"
+
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
- 
-# Load a few important annexes, without Turbo
-# (this is currently required for annexes)
+
 zinit light-mode for \
-    zdharma-continuum/z-a-rust \
-    zdharma-continuum/z-a-as-monitor \
-    zdharma-continuum/z-a-patch-dl \
-    zdharma-continuum/z-a-bin-gem-node
- 
-### End of Zinit's installer chunk
+  zdharma-continuum/z-a-rust \
+  zdharma-continuum/z-a-bin-gem-node
+
+# ------------------------------------------------------------------------------
+# Oh My Zsh snippets only
+# ------------------------------------------------------------------------------
+
 zinit snippet OMZL::completion.zsh
 zinit snippet OMZL::history.zsh
+zinit snippet OMZL::key-bindings.zsh
+
 zinit snippet OMZP::colored-man-pages/colored-man-pages.plugin.zsh
 zinit snippet OMZP::git/git.plugin.zsh
+zinit snippet OMZP::git-auto-fetch/git-auto-fetch.plugin.zsh
+zinit snippet OMZP::dirhistory/dirhistory.plugin.zsh
+zinit snippet OMZP::docker/docker.plugin.zsh
 zinit snippet OMZP::kubectl/kubectl.plugin.zsh
+zinit snippet OMZP::helm/helm.plugin.zsh
 zinit snippet OMZP::terraform/terraform.plugin.zsh
+zinit snippet OMZP::colorize/colorize.plugin.zsh
 
-zstyle ':completion' menu select
+zinit snippet OMZP::fzf/fzf.plugin.zsh
+zinit snippet OMZP::fzf-tab/fzf-tab.plugin.zsh
 
-# Package could be install cross plateform without issue
+if (( $+commands[brew] )); then
+  zinit snippet OMZP::brew/brew.plugin.zsh
+fi
+
+# ------------------------------------------------------------------------------
+# Prompt
+# ------------------------------------------------------------------------------
+
 zinit ice depth=1
 zinit light romkatv/powerlevel10k
-ln -sf ~/.local/share/zinit/plugins/romkatv---powerlevel10k/ $ZSH_CUSTOM/themes/powerlevel10k
- 
+
+# ------------------------------------------------------------------------------
+# Completions
+# ------------------------------------------------------------------------------
+
 zinit ice blockf
 zinit light zsh-users/zsh-completions
- 
-zinit ice as"program" id-as"terraform" extract
-zinit snippet https://releases.hashicorp.com/terraform/1.14.2/terraform_1.14.2_${platform}_${arch}.zip
- 
-zinit ice lucid wait'1' as"program" id-as"go" extract"!"
-zinit snippet https://go.dev/dl/go1.23.5.${platform}-${arch}.tar.gz
- 
-zinit ice as"program" id-as"auto"
-zinit snippet https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl
- 
-zinit id-as"helm" as="readurl|command" extract \
-  pick"${platform}-${arch}/helm" \
-  dlink"https://get.helm.sh/helm-v%VERSION%-${platform}-${arch}.tar.gz" \
-  for https://github.com/helm/helm/releases/
-  #atload"helm plugin install https://github.com/databus23/helm-diff" \
 
-zinit ice from"gh-r" as"program" \
-  bpick"talosctl-${platform}-${arch}" mv"talosctl-${platform}-${arch} -> talosctl"
-zinit load siderolabs/talos
+autoload -Uz compinit
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump-${ZSH_VERSION}"
 
-zinit ice from"gh-r" as"program" mv"sops-* -> sops"
+# If you ever need bash completion scripts in zsh, uncomment:
+# autoload -U +X bashcompinit && bashcompinit
+
+zstyle ':completion:*' menu select
+
+# ------------------------------------------------------------------------------
+# Shell UX plugins
+# ------------------------------------------------------------------------------
+
+zinit ice wait"1" lucid
+zinit light zsh-users/zsh-autosuggestions
+
+zinit ice wait"1" lucid
+zinit light zdharma-continuum/fast-syntax-highlighting
+
+zinit ice wait"1" lucid depth=1
+zinit light junegunn/fzf
+
+# ------------------------------------------------------------------------------
+# CLI tools installed via Zinit
+# ------------------------------------------------------------------------------
+
+# Go
+zinit ice silent as"program" extract pick"go/bin/go"
+zinit snippet "https://go.dev/dl/go1.23.5.${platform}-${arch}.tar.gz"
+
+for go_bin in \
+  "$ZINIT_BASE/snippets/go/go/bin" \
+  "$ZINIT_BASE/plugins/_local---go/go/bin"
+do
+  [[ -d "$go_bin" ]] && path+=("$go_bin")
+done
+
+# kubectl
+zinit ice silent as"program"
+zinit snippet "https://dl.k8s.io/release/v1.32.1/bin/${platform}/${arch}/kubectl"
+
+# helm
+zinit ice silent as"program" extract pick"${platform}-${arch}/helm"
+zinit snippet "https://get.helm.sh/helm-v3.17.1-${platform}-${arch}.tar.gz"
+
+# terraform
+zinit ice silent as"program" extract pick"terraform"
+zinit snippet "https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_${platform}_${arch}.zip"
+
+# sops
+zinit ice silent from"gh-r" as"program" mv"sops-* -> sops"
 zinit load getsops/sops
 
-zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
-zinit load sharkdp/bat
+# bat
+if [[ -n "$rust_target" ]]; then
+  zinit ice silent from"gh-r" as"program" \
+    bpick"bat-v*-${rust_target}.tar.gz" \
+    mv"bat-v*-${rust_target} -> bat" \
+    pick"bat/bat"
+  zinit load sharkdp/bat
+fi
 
-zinit ice from"gh-r" as"program"
+# k9s
+zinit ice silent from"gh-r" as"program"
 zinit load derailed/k9s
 
-zinit ice from"gh-r" as"program" mv"yq_*-> yq"
+# yq
+zinit ice silent from"gh-r" as"program" mv"yq_* -> yq"
 zinit load mikefarah/yq
 
-zinit ice from"gh-r" as"program"
+# yh
+zinit ice silent from"gh-r" as"program"
 zinit load andreazorzetto/yh
 
-zinit ice from"gh-r" as"program"
+# kubecolor
+zinit ice silent from"gh-r" as"program"
 zinit load kubecolor/kubecolor
 
-zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
-  mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
-zinit load lsd-rs/lsd
+# lsd
+if [[ -n "$rust_target" ]]; then
+  zinit ice silent from"gh-r" as"program" \
+    bpick"lsd-v*-${rust_target}.tar.gz" \
+    mv"lsd-v*-${rust_target} -> lsd" \
+    pick"lsd/lsd"
+  zinit load lsd-rs/lsd
+fi
 
-zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
-  mv"krew-${platform}_${arch} -> krew" pick"krew"
+# krew
+zinit ice silent from"gh-r" as"program" \
+  bpick"krew-${platform}_${arch}.tar.gz" \
+  mv"krew-${platform}_${arch} -> krew" \
+  pick"krew"
 zinit load kubernetes-sigs/krew
 
-zinit ice from"gh-r" as"program"
+# helmfile
+zinit ice silent from"gh-r" as"program"
 zinit load helmfile/helmfile
 
-zinit ice from"gh-r" as"program"
+# hubble
+zinit ice silent from"gh-r" as"program"
 zinit load cilium/hubble
 
-zinit ice from"gh-r" as"program"
+# kubeseal
+zinit ice silent from"gh-r" as"program"
 zinit load bitnami-labs/sealed-secrets
 
-zinit ice from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
+# argocd
+zinit ice silent from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
 zinit load argoproj/argo-cd
 
-zinit ice from"gh-r" as"program"
+# cilium
+zinit ice silent from"gh-r" as"program"
 zinit load cilium/cilium-cli
 
-zinit ice from"gh-r" as"program" pick"uv-*/uv" sbin"uv-*/uvx"
+# uv only
+zinit ice silent from"gh-r" as"program" pick"uv-*/uv"
 zinit load astral-sh/uv
 
- 
-# Install package based on distro
-if [[ "${kernel}" == *"-WSL2" ]];then
-  # Install package for WSL only
-  # zinit ice from"gh-r" ver"v1.1.5" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
-  #   mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
-  # zinit load lsd-rs/lsd
- 
-  # zinit ice from"gh-r" ver"v0.4.4" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
-  #   mv"krew-${platform}_${arch} -> krew" pick"krew"
-  # zinit load kubernetes-sigs/krew
- 
-  # zinit ice from"gh-r" ver"v0.170.0" as"program"
-  # zinit load helmfile/helmfile
- 
-  # zinit ice from"gh-r" ver"v1.16.5" as"program"
-  # zinit load cilium/hubble
- 
-  # zinit ice from"gh-r" ver"v0.28.0" as"program"
-  # zinit load bitnami-labs/sealed-secrets
- 
-  # zinit ice as"command" from"gh-r" ver"v0.25.0" mv"bat* -> bat" pick"bat/bat"
-  # zinit load sharkdp/bat
- 
-  # zinit ice from"gh-r" ver"v0.5.0" as"program"
-  # zinit load kubecolor/kubecolor
- 
-  # zinit ice from"gh-r" ver"v4.45.1" as"program" mv"yq_*-> yq"
-  # zinit load mikefarah/yq
- 
-  # zinit ice from"gh-r" ver"v0.32.7" as"program"
-  # zinit load derailed/k9s
- 
-  # zinit ice from"gh-r" ver"v2.13.3" as"program" mv"argocd-${platform}-${arch} -> argocd"
-  # zinit load argoproj/argo-cd
- 
-  # zinit ice from"gh-r" ver"v0.16.23" as"program"
-  # zinit load cilium/cilium-cli
-else
-  # zinit ice as"command" from"gh-r" mv"bat* -> bat" pick"bat/bat"
-  # zinit load sharkdp/bat
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load derailed/k9s
- 
-  # zinit ice from"gh-r" as"program" mv"yq_*-> yq"
-  # zinit load mikefarah/yq
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load andreazorzetto/yh
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load kubecolor/kubecolor
- 
-  # zinit ice from"gh-r" as"program" bpick"lsd-*-${architecture}-unknown-${platform}-gnu.tar.gz" \
-  #   mv"lsd-*-${architecture}-unknown-${platform}-gnu -> lsd" pick"lsd/lsd"
-  # zinit load lsd-rs/lsd
- 
-  # zinit ice from"gh-r" as"program" bpick"krew-${platform}_${arch}.tar.gz" \
-  #   mv"krew-${platform}_${arch} -> krew" pick"krew"
-  # zinit load kubernetes-sigs/krew
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load helmfile/helmfile
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load cilium/hubble
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load bitnami-labs/sealed-secrets
- 
-  # zinit ice from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
-  # zinit load argoproj/argo-cd
- 
-  # zinit ice from"gh-r" as"program"
-  # zinit load cilium/cilium-cli
- 
-  if [[ "${architecture}" == "x86_64" ]];then
-    zinit ice from"gh-r" as"program" mv"docker* -> docker-compose"
-    zinit load docker/compose
-  elif [[ "${architecture}" == "arm64" ]];then
-    zinit ice from"gh-r" as"program" mv"docker* -> docker-compose" bpick"*darwin-aarch64*"
-    zinit load docker/compose
- 
-    zinit ice from"gh-r" as"program" pick"usr/local/bin/helm-docs"
-    zinit load norwoodj/helm-docs
+# ------------------------------------------------------------------------------
+# Docker Compose v2 plugin (Linux only, enables `docker compose`)
+# ------------------------------------------------------------------------------
+
+if $is_linux && [[ -n "$docker_compose_arch" ]]; then
+  mkdir -p "$HOME/.docker/cli-plugins"
+
+  if [[ ! -x "$HOME/.docker/cli-plugins/docker-compose" ]]; then
+    curl -fL "https://github.com/docker/compose/releases/download/v2.35.1/docker-compose-linux-${docker_compose_arch}" \
+      -o "$HOME/.docker/cli-plugins/docker-compose" && \
+      chmod +x "$HOME/.docker/cli-plugins/docker-compose"
   fi
 fi
- 
-# Two regular plugins loaded without investigating.
-zinit light zsh-users/zsh-autosuggestions
-zinit ice atinit'zicompinit'
-zinit light zdharma-continuum/fast-syntax-highlighting
- 
-# Kubecolor
-alias kubectl=kubecolor
-compdef kubecolor=kubectl
- 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ------------------------------------------------------------------------------
+# Tool-dependent aliases
+# ------------------------------------------------------------------------------
+
+if (( $+commands[kubecolor] )); then
+  alias kubectl=kubecolor
+  compdef kubecolor=kubectl
+fi
+
+# ------------------------------------------------------------------------------
+# Prompt config
+# ------------------------------------------------------------------------------
+
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
