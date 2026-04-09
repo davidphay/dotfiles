@@ -124,9 +124,6 @@ zinit snippet OMZP::helm/helm.plugin.zsh
 zinit snippet OMZP::terraform/terraform.plugin.zsh
 zinit snippet OMZP::colorize/colorize.plugin.zsh
 
-zinit snippet OMZP::fzf/fzf.plugin.zsh
-zinit snippet OMZP::fzf-tab/fzf-tab.plugin.zsh
-
 if (( $+commands[brew] )); then
   zinit snippet OMZP::brew/brew.plugin.zsh
 fi
@@ -163,9 +160,6 @@ zinit light zsh-users/zsh-autosuggestions
 zinit ice wait"1" lucid
 zinit light zdharma-continuum/fast-syntax-highlighting
 
-zinit ice wait"1" lucid depth=1
-zinit light junegunn/fzf
-
 # ------------------------------------------------------------------------------
 # CLI tools installed via Zinit
 # ------------------------------------------------------------------------------
@@ -194,7 +188,10 @@ zinit ice silent as"program" extract pick"terraform"
 zinit snippet "https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_${platform}_${arch}.zip"
 
 # sops
-zinit ice silent from"gh-r" as"program" mv"sops-* -> sops"
+zinit ice silent from"gh-r" as"program" \
+  mv"sops-* -> sops" \
+  atclone'chmod +x sops' \
+  atpull'%atclone'
 zinit load getsops/sops
 
 # bat
@@ -211,7 +208,10 @@ zinit ice silent from"gh-r" as"program"
 zinit load derailed/k9s
 
 # yq
-zinit ice silent from"gh-r" as"program" mv"yq_* -> yq"
+zinit ice silent from"gh-r" as"program" \
+  mv"yq_* -> yq" \
+  atclone'chmod +x yq' \
+  atpull'%atclone'
 zinit load mikefarah/yq
 
 # yh
@@ -251,7 +251,10 @@ zinit ice silent from"gh-r" as"program"
 zinit load bitnami-labs/sealed-secrets
 
 # argocd
-zinit ice silent from"gh-r" as"program" mv"argocd-${platform}-${arch} -> argocd"
+zinit ice silent from"gh-r" as"program" \
+  mv"argocd-${platform}-${arch} -> argocd" \
+  atclone'chmod +x argocd' \
+  atpull'%atclone'
 zinit load argoproj/argo-cd
 
 # cilium
